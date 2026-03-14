@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import ArrayVisualizer from '../components/ArrayVisualizer'
 import { bubbleSortSteps } from '../utils/bubbleSort'
@@ -7,13 +7,40 @@ function Visualizer() {
     const [steps, setSteps] = useState([])
     const [currentStep, setCurrentStep] = useState(0)
     const [inputArray, setInputArray] = useState('5, 2, 9, 1, 4, 8, 3')
+    const [isPlaying, setIsPlaying] = useState(false)
+    const intervalRef = useRef(null)
 
     function handleRun() {
         const arr = inputArray.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
         const result = bubbleSortSteps(arr)
         setSteps(result)
         setCurrentStep(0)
+        clearInterval(intervalRef.current)
+        setIsPlaying(false)
     }
+
+    function handlePlay() {
+        if (isPlaying) {
+            clearInterval(intervalRef.current)
+            setIsPlaying(false)
+            return
+        }
+        setIsPlaying(true)
+        intervalRef.current = setInterval(() => {
+            setCurrentStep(s => {
+                if (s >= steps.length - 1) {
+                    clearInterval(intervalRef.current)
+                    setIsPlaying(false)
+                    return s
+                }
+                return s + 1
+            })
+        }, 600)
+    }
+
+    useEffect(() => {
+        return () => clearInterval(intervalRef.current)
+    }, [])
 
     return (
         <div>
@@ -84,7 +111,6 @@ function Visualizer() {
                 {steps.length > 0 && (
                     <div style={{ marginTop: '32px' }}>
 
-                        {/* Dizi görselleştirme */}
                         <div style={{ marginBottom: '24px' }}>
                             <ArrayVisualizer
                                 array={steps[currentStep].array}
@@ -92,7 +118,6 @@ function Visualizer() {
                             />
                         </div>
 
-                        {/* Adım açıklaması */}
                         <p style={{
                             color: '#aaa',
                             marginBottom: '24px',
@@ -101,7 +126,6 @@ function Visualizer() {
                             Adım {currentStep + 1} / {steps.length}: {steps[currentStep].description}
                         </p>
 
-                        {/* Kontroller */}
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <button
                                 onClick={() => setCurrentStep(s => Math.max(0, s - 1))}
@@ -115,6 +139,18 @@ function Visualizer() {
                                     cursor: 'pointer'
                                 }}>
                                 ← Geri
+                            </button>
+                            <button
+                                onClick={handlePlay}
+                                style={{
+                                    backgroundColor: isPlaying ? '#dc2626' : '#16a34a',
+                                    color: '#fff',
+                                    border: 'none',
+                                    padding: '10px 20px',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer'
+                                }}>
+                                {isPlaying ? '⏸ Durdur' : '▶ Oynat'}
                             </button>
                             <button
                                 onClick={() => setCurrentStep(s => Math.min(steps.length - 1, s + 1))}
