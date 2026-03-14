@@ -2,17 +2,23 @@ import { useState, useEffect, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import ArrayVisualizer from '../components/ArrayVisualizer'
 import { bubbleSortSteps } from '../utils/bubbleSort'
+import { quickSortSteps } from '../utils/quickSort'
 
 function Visualizer() {
     const [steps, setSteps] = useState([])
     const [currentStep, setCurrentStep] = useState(0)
     const [inputArray, setInputArray] = useState('5, 2, 9, 1, 4, 8, 3')
     const [isPlaying, setIsPlaying] = useState(false)
+    const [speed, setSpeed] = useState(600)
     const intervalRef = useRef(null)
 
     function handleRun() {
         const arr = inputArray.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
-        const result = bubbleSortSteps(arr)
+        let result = []
+
+        if (algorithm === 'Bubble Sort') result = bubbleSortSteps(arr)
+        else if (algorithm === 'Quick Sort') result = quickSortSteps(arr)
+
         setSteps(result)
         setCurrentStep(0)
         clearInterval(intervalRef.current)
@@ -35,7 +41,7 @@ function Visualizer() {
                 }
                 return s + 1
             })
-        }, 600)
+        }, speed)
     }
 
     useEffect(() => {
@@ -49,17 +55,19 @@ function Visualizer() {
                 <h2 style={{ marginBottom: '24px', color: '#7c3aed' }}>Visualizer</h2>
 
                 <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                    <select style={{
-                        backgroundColor: '#1a1a1a',
-                        color: '#fff',
-                        border: '1px solid #2a2a2a',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontSize: '14px'
-                    }}>
+                    <select
+                        value={algorithm}
+                        onChange={e => setAlgorithm(e.target.value)}
+                        style={{
+                            backgroundColor: '#1a1a1a',
+                            color: '#fff',
+                            border: '1px solid #2a2a2a',
+                            padding: '10px 16px',
+                            borderRadius: '8px',
+                            fontSize: '14px'
+                        }}>
                         <option>Bubble Sort</option>
                         <option>Quick Sort</option>
-                        <option>Merge Sort</option>
                     </select>
 
                     <select style={{
@@ -92,6 +100,22 @@ function Visualizer() {
                         fontFamily: 'monospace'
                     }}
                 />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                    <span style={{ color: '#aaa', fontSize: '14px' }}>Hız:</span>
+                    <input
+                        type="range"
+                        min="100"
+                        max="1500"
+                        step="100"
+                        value={1600 - speed}
+                        onChange={e => setSpeed(1600 - parseInt(e.target.value))}
+                        style={{ width: '150px' }}
+                    />
+                    <span style={{ color: '#aaa', fontSize: '14px' }}>
+                        {speed < 400 ? 'Hızlı' : speed < 900 ? 'Orta' : 'Yavaş'}
+                    </span>
+                </div>
 
                 <button
                     onClick={handleRun}
